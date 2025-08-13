@@ -1,4 +1,5 @@
 import { Server } from "socket.io";
+import ProcessedMessage from "./models/ProcessedMessage.js";
 
 export function setupSocket(server) {
   const io = new Server(server, {
@@ -15,15 +16,48 @@ export function setupSocket(server) {
   
 
   io.on("connection", (socket) => {
-    const user = socket.user; // Get user
-    console.log("User connected:", user.id);
+    console.log("A user connected:", socket.id);
+    
 
-    socket.on("message", (data) => {
-      const {text,from,to,conversationId,direction } = data;
+    socket.on("sendMessage", async(data) => {
+      try {
+        const { sender, type, text, conversationId,receiver} = data;
+        if(!sender||!type||!text||!conversationId) throw new Error("Missing required fields");
+        
+        const conversationExists = await ProcessedMessage.findOne({ conversation_id: conversationId });
+        if (conversationExists) {
+          const newMessage = new ProcessedMessage({
+            participants: conversationExists.participants,
+            message_id: Math.random().toString(36).substring(2, 15), // Generate a random message ID
+            sender,
+            type,
+            text,
+            status: "sent",
+            conversation_id: conversationId,
+            timestamp: new Date(),
+          });
+          await newMessage.save();
+          socket.emit("messageSent", newMessage);
+        }else{
+          const newConversation = new ProcessedMessage({
+            participants: [sender, receiver],
+            message_id: Math.random().toString(36).substring(2, 15), // Generate a random message ID
+            sender,
+            type,
+            text,
+            status: "sent",
+            conversation_id: conversationId,
+            timestamp: new Date(),
+          });
+          await newConversation.save();
+          socket.emit("messageSent", newConversation)
+        }
+      } catch (error) {
+        console.error("Error processing message:", error);
+      }
     });
-
     socket.on("disconnect", async () => {
-      console.log("User disconnected:", user.id);
+      console.log("User disconnected:", socket.id);
 
       try {
         socket.leaveAll();
@@ -35,4 +69,5 @@ export function setupSocket(server) {
       }
     });
   });
+
 }

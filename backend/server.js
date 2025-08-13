@@ -1,10 +1,11 @@
 import dotenv from "dotenv"
-dotenv.config({path:"/.env.local"})
-import connectDB from "./config/connectDB"
+dotenv.config({path:".env.local"})
+import connectDB from "./config/connectDB.js"
 import express from "express"
 import { setupSocket } from "./socket.js";
 import http from "http";
 import cors from "cors";
+import messageRoutes from "./routes/message.routes.js";
 
 
 const app = express()
@@ -36,6 +37,8 @@ app.use(
   }),
 );
 app.use(express.json());
+
+app.use("/api", messageRoutes);
 
 app.get("/", (req, res) => {
     res.send("Hello World")
