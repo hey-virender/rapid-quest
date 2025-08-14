@@ -41,6 +41,7 @@ const WhatsAppChat = () => {
         sender: me,
         type: "text",
         text,
+        status:"sent",
         createdAt: Date.now(),
         updatedAt: Date.now(),
         _id: Math.random() * 10000,
