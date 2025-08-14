@@ -37,7 +37,11 @@ export function setupSocket(server) {
             timestamp: new Date(),
           });
           await newMessage.save();
-          socket.emit("messageSent", newMessage);
+          newMessage.participants.map((user)=>{
+            if(user!==sender){
+              socket.emit(`newMessage-${user}`, newConversation)
+            }
+          })
         }else{
           const newConversation = new ProcessedMessage({
             participants: [sender, receiver],
@@ -50,12 +54,34 @@ export function setupSocket(server) {
             timestamp: new Date(),
           });
           await newConversation.save();
-          socket.emit("messageSent", newConversation)
+          newConversation.participants.map((user)=>{
+            if(user!==sender){
+              socket.emit(`newMessage-${user}`, newConversation)
+            }
+          })
+          
         }
       } catch (error) {
         console.error("Error processing message:", error);
       }
     });
+
+    socket.on("converation:read",async(data)=>{
+      try {
+        const {conversationId,userId} = data
+        await ProcessedMessage.updateMany(
+          { conversation_id: conversationId, sender: { $ne: userId },status:{$ne:"read"} },
+          { $set: { status: "read" } }
+        );
+
+        
+
+        
+      } catch (error) {
+        console.error("Error processing message:", error);
+      }
+
+    })
     socket.on("disconnect", async () => {
       console.log("User disconnected:", socket.id);
 

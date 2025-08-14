@@ -28,7 +28,7 @@ const Sidebar = () => {
           </button>
         ))}
         <img
-          className="size-8"
+          className="size-6"
           src="https://static.whatsapp.net/rsrc.php/v4/ye/r/W2MDyeo0zkf.png"
           draggable="false"
         />

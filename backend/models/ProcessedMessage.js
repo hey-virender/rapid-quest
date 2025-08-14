@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-// Message schema — one document = one message
+
 const ProcessedMessageSchema = new mongoose.Schema(
   {
     // Array of participants (sorted to ensure unique conversation IDs)
@@ -17,7 +17,7 @@ const ProcessedMessageSchema = new mongoose.Schema(
     sender: { type: String, required: true, index: true },
 
     // Message type: text, image, video, document, etc.
-    type: { type: String, required: true },
+    type: { type: String, required: true,enum:["text","image","video","document"] },
 
     // Text body (if type = "text")
     text: { type: String },
@@ -41,7 +41,7 @@ const ProcessedMessageSchema = new mongoose.Schema(
     },
 
     // Status: sent, delivered, read
-    status: { type: String, default: "sent", index: true },
+    status: { type: String, default: "sent", index: true, enum:["sent","delivered","read"] },
 
     // Conversation ID (deterministic: participants sorted & joined)
     conversation_id: { type: String, index: true },
